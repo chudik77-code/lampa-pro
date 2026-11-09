@@ -15,6 +15,11 @@ Tracks viewing time, sessions, completed titles, movies and series, genres, mont
 - Statistics are stored locally in Lampa Storage.
 - Does not store stream URLs or torrent hashes.
 
+### Cinema UI
+Adds optional TV-friendly focus highlighting and subtle card styling.
+- File: [cinema-ui.js](https://raw.githubusercontent.com/chudik77-code/lampa-pro/main/cinema-ui.js)
+- Settings: focus highlighting and card styling can be toggled independently.
+
 ## Installation
 
 1. Open Lampa → Settings → Plugins.
