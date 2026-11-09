@@ -249,7 +249,7 @@
         });
         Lampa.SettingsApi.addParam({
             component: SETTINGS_ID,
-            param: { name: KEY_NAME, type: 'input', default: '', placeholder: 'Вставьте личный API-ключ' },
+            param: { name: KEY_NAME, type: 'input', values: '', default: '', placeholder: 'Вставьте личный API-ключ' },
             field: {
                 name: Lampa.Lang && Lampa.Lang.translate ? Lampa.Lang.translate('lpro_rating_key') : 'Ключ Kinopoisk API',
                 description: Lampa.Lang && Lampa.Lang.translate ? Lampa.Lang.translate('lpro_rating_key_desc') : 'Получите личный ключ на kinopoiskapiunofficial.tech'
