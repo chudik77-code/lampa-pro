@@ -20,6 +20,12 @@ Adds optional TV-friendly focus highlighting and subtle card styling.
 - File: [cinema-ui.js](https://raw.githubusercontent.com/chudik77-code/lampa-pro/main/cinema-ui.js)
 - Settings: focus highlighting and card styling can be toggled independently.
 
+### Movie Assistant
+Searches TMDB keyword metadata from a plot description and finds similar films from a title or selected result.
+- File: [movie-assistant.js](https://raw.githubusercontent.com/chudik77-code/lampa-pro/main/movie-assistant.js)
+- Requires the user's own TMDB v3 API key, stored locally in Lampa.
+- Plot search depends on TMDB keyword metadata; it is not semantic AI search.
+
 ## Installation
 
 1. Open Lampa → Settings → Plugins.
