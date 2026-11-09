@@ -116,6 +116,7 @@
 
         this.start = function () {
             render();
+            refreshAll();
             var first = root.find('.selector').first();
             if (first.length) first.addClass('focus');
         };
@@ -250,6 +251,43 @@
             render();
         }
 
+        function refreshAll() {
+            var initial = read();
+            if (!initial.items.length) return;
+            if (!key()) {
+                root.find('.lpro-st-status').text('Для обновления дат выхода добавьте ключ TMDB в настройках Movie Assistant.');
+                return;
+            }
+            var ids = initial.items.map(function (item) { return item.id; });
+            var index = 0;
+            function next() {
+                if (index >= ids.length) {
+                    root.find('.lpro-st-status').text('Данные сериалов обновлены.');
+                    render();
+                    return;
+                }
+                var id = ids[index++];
+                api('/tv/' + encodeURIComponent(id), {}, function (item) {
+                    var data = read();
+                    var saved = findSeries(data, id);
+                    if (saved) {
+                        saved.name = item.name || saved.name;
+                        saved.poster = item.poster_path || saved.poster;
+                        saved.status = item.status || saved.status;
+                        saved.seasons = item.seasons || saved.seasons;
+                        saved.nextEpisode = item.next_episode_to_air || null;
+                        saved.lastEpisode = item.last_episode_to_air || null;
+                        write(data);
+                    }
+                    next();
+                }, function () {
+                    next();
+                });
+            }
+            root.find('.lpro-st-status').text('Проверяем даты выхода новых серий…');
+            next();
+        }
+
         function refreshSeries(id) {
             root.find('.lpro-st-status').text('Обновление данных…');
             api('/tv/' + encodeURIComponent(id), {}, function (item) {
@@ -294,8 +332,9 @@
                     '" data-season="' + esc(s.season_number) + '">Сезон ' + esc(s.season_number) + '</button>';
             });
             html += '</div><div class="lpro-st-episodes">Загрузка серий…</div></div>';
+            root.find('.lpro-st-detail').remove();
             root.find('.lpro-st-search-results').html('');
-            root.find('.lpro-st-section').last().after(html);
+            root.find('.lpro-st-wrap').append(html);
             root.find('.lpro-st-back').on('hover:enter click', function () {
                 root.find('.lpro-st-detail').remove();
                 render();
