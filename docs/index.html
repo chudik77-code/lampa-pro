@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lampa PRO — плагины для Lampa</title>
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#10141c;color:#edf1f7;font:16px/1.55 Arial,sans-serif}
+main{max-width:900px;margin:0 auto;padding:32px 20px 56px}
+h1{font-size:clamp(30px,5vw,46px);margin:0 0 8px}
+.sub{color:#aeb8c8;margin:0 0 28px}
+.note{background:#1b2432;border:1px solid #344154;border-radius:12px;padding:16px;margin:20px 0 28px}
+.plugins{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+article{background:#171e29;border:1px solid #2b3748;border-radius:12px;padding:18px;min-width:0}
+h2{font-size:20px;margin:0 0 8px}
+p{margin:8px 0;color:#c4cedc}
+a{color:#8fc5ff}
+.url{display:block;overflow-wrap:anywhere;background:#0d121a;border-radius:8px;padding:10px;margin-top:12px;font:13px/1.5 monospace;color:#b9d9ff}
+button{border:0;border-radius:8px;background:#315f91;color:white;padding:10px 14px;font-size:14px;margin-top:10px;cursor:pointer}
+.small{font-size:13px;color:#9eabba}
+ol{padding-left:22px}
+footer{margin-top:28px;color:#9eabba;font-size:13px}
+</style>
+</head>
+<body>
+<main>
+<h1>Lampa PRO</h1>
+<p class="sub">Набор дополнительных плагинов для Lampa TV</p>
+<div class="note">
+<strong>Установка</strong>
+<ol>
+<li>Откройте Lampa → Настройки → Плагины.</li>
+<li>Добавьте URL нужного плагина из списка ниже.</li>
+<li>Если плагин не появился сразу, перезапустите Lampa.</li>
+</ol>
+</div>
+<section class="plugins">
+<article><h2>Smart Rating</h2><p>Показывает рейтинги Кинопоиска и IMDb на страницах фильмов.</p><p class="small">Требуется личный API-ключ Кинопоиска, который указывается в настройках плагина.</p><code class="url" id="sr">https://chudik77-code.github.io/lampa-pro/sr.js</code><button onclick="copyUrl('sr')">Скопировать ссылку</button></article>
+<article><h2>Watch Statistics</h2><p>Статистика просмотра: время, сеансы, завершённые фильмы и сериалы, жанры, помесячные итоги и недавние просмотры.</p><p class="small">Данные хранятся локально в Lampa.</p><code class="url" id="ws">https://chudik77-code.github.io/lampa-pro/ws.js</code><button onclick="copyUrl('ws')">Скопировать ссылку</button></article>
+<article><h2>Cinema UI</h2><p>Дополнительная подсветка фокуса для управления пультом и оформление карточек.</p><p class="small">Подсветку и оформление можно включать независимо.</p><code class="url" id="cinema">https://chudik77-code.github.io/lampa-pro/cinema.js</code><button onclick="copyUrl('cinema')">Скопировать ссылку</button></article>
+<article><h2>Movie Assistant</h2><p>Поиск фильмов по ключевым словам сюжета и подбор похожих фильмов.</p><p class="small">Требуется личный TMDB v3 API-ключ. Поиск сюжета использует ключевые слова TMDB, а не AI-семантический поиск.</p><code class="url" id="movie">https://chudik77-code.github.io/lampa-pro/movie.js</code><button onclick="copyUrl('movie')">Скопировать ссылку</button></article>
+<article><h2>Series Tracker</h2><p>Список сериалов, сезоны, эпизоды, отметки просмотренных серий и даты выхода по данным TMDB.</p><p class="small">Использует тот же TMDB API-ключ, что Movie Assistant. Обновление выполняется при открытии трекера или вручную; фоновых уведомлений при закрытой Lampa нет.</p><code class="url" id="series">https://chudik77-code.github.io/lampa-pro/series.js</code><button onclick="copyUrl('series')">Скопировать ссылку</button></article>
+</section>
+<div class="note"><strong>Важно</strong><p>Плагины разрабатывались с учётом Android TV и Android WebView. Фактическую работу необходимо проверить на конкретной версии Lampa и устройстве. Целевая конфигурация проекта: Lampa 7.7.9-115, Android TV 9 (Mi Box 4).</p></div>
+<footer>Проект Lampa PRO · <a href="https://github.com/chudik77-code/lampa-pro">Исходный код на GitHub</a></footer>
+</main>
+<script>
+function copyUrl(id){
+ var el=document.getElementById(id), value=el.textContent;
+ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(value).then(function(){alert('Ссылка скопирована');},function(){fallback(value);});}
+ else{fallback(value);}
+}
+function fallback(value){
+ var area=document.createElement('textarea');area.value=value;document.body.appendChild(area);area.select();
+ try{document.execCommand('copy');alert('Ссылка скопирована');}catch(e){alert(value);}
+ document.body.removeChild(area);
+}
+</script>
+</body>
+</html>
