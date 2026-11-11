@@ -13,6 +13,7 @@
     var PLUGIN_FLAG = 'lampa_pro_smart_rating_loaded';
     var SETTINGS_ID = 'lampa_pro_smart_rating';
     var KEY_NAME = 'lampa_pro_smart_rating_api_key';
+    var OMDB_KEY_NAME = 'lampa_pro_smart_rating_omdb_api_key';
     var CACHE_NAME = 'lampa_pro_smart_rating_cache';
     var CACHE_TTL = 24 * 60 * 60 * 1000;
     var API_BASE = 'https://kinopoiskapiunofficial.tech/api';
@@ -123,6 +124,7 @@
         return '<div class="lpro-rating" aria-live="polite">' +
             '<div class="lpro-rating__item"><span class="lpro-rating__label">Кинопоиск</span><span class="lpro-rating__value" data-rating="kp">—</span></div>' +
             '<div class="lpro-rating__item"><span class="lpro-rating__label">IMDb</span><span class="lpro-rating__value" data-rating="imdb">—</span></div>' +
+            '<div class="lpro-rating__item"><span class="lpro-rating__label">Rotten Tomatoes</span><span class="lpro-rating__value" data-rating="rt">—</span></div>' +
             '<span class="lpro-rating__status" data-rating="status">' + escapeHtml(status || '') + '</span>' +
             '</div>';
     }
@@ -134,7 +136,8 @@
     function setRatings(panel, data) {
         panel.find('[data-rating="kp"]').text(formatRating(data.ratingKinopoisk));
         panel.find('[data-rating="imdb"]').text(formatRating(data.ratingImdb));
-        setStatus(panel, '');
+        panel.find('[data-rating="rt"]').text(data.ratingRottenTomatoes ? data.ratingRottenTomatoes : '—');
+        setStatus(panel, data.ratingRottenTomatoes ? '' : (data.rtMessage || 'Оценка Rotten Tomatoes недоступна'));
     }
 
     function cacheGet(key) {
@@ -206,6 +209,21 @@
         }
     }
 
+    function omdbRequest(imdbId, apiKey, onSuccess, onError) {
+        var network = new Lampa.Reguest();
+        network.timeout(15000);
+        var url = 'https://www.omdbapi.com/?apikey=' + encodeURIComponent(apiKey) + '&i=' + encodeURIComponent(imdbId) + '&r=json';
+        network.silent(url, function (data) {
+            if (!data || data.Response === 'False') {
+                onError(data && data.Error ? data.Error : 'Нет ответа OMDb');
+                return;
+            }
+            onSuccess(data);
+        }, function (xhr, error) {
+            onError(network.errorDecode ? network.errorDecode(xhr, error) : 'Ошибка запроса OMDb');
+        });
+    }
+
     function loadRatings(card, apiKey, callback) {
         var cacheKey = card.imdb_id || card.id || normalizeTitle(card.title || card.original_title);
         var cached = cacheGet(String(cacheKey));
@@ -217,10 +235,37 @@
             apiRequest(API_BASE + '/v2.2/films/' + encodeURIComponent(id), apiKey, function (data) {
                 var result = {
                     ratingKinopoisk: data.ratingKinopoisk,
-                    ratingImdb: data.ratingImdb
+                    ratingImdb: data.ratingImdb,
+                    ratingRottenTomatoes: null,
+                    rtMessage: ''
                 };
-                cacheSet(String(cacheKey), result);
-                callback(null, result);
+                var omdbKey = String(Lampa.Storage.get(OMDB_KEY_NAME, '') || '').trim();
+                var imdbId = card.imdb_id || card.imdbId || data.imdbId || data.imdb_id || '';
+                if (!omdbKey) {
+                    result.rtMessage = 'Добавьте OMDb API-ключ для Rotten Tomatoes';
+                    cacheSet(String(cacheKey), result);
+                    return callback(null, result);
+                }
+                if (!imdbId) {
+                    result.rtMessage = 'Нет IMDb ID для поиска Rotten Tomatoes';
+                    cacheSet(String(cacheKey), result);
+                    return callback(null, result);
+                }
+                omdbRequest(imdbId, omdbKey, function (omdb) {
+                    var ratings = Array.isArray(omdb.Ratings) ? omdb.Ratings : [];
+                    ratings.forEach(function (rating) {
+                        if (rating && rating.Source === 'Rotten Tomatoes' && rating.Value && rating.Value !== 'N/A') {
+                            result.ratingRottenTomatoes = String(rating.Value);
+                        }
+                    });
+                    if (!result.ratingRottenTomatoes) result.rtMessage = 'Rotten Tomatoes не предоставил оценку для этого названия';
+                    cacheSet(String(cacheKey), result);
+                    callback(null, result);
+                }, function (error) {
+                    result.rtMessage = error || 'Ошибка OMDb';
+                    cacheSet(String(cacheKey), result);
+                    callback(null, result);
+                });
             }, function (error) {
                 callback(error || 'Не удалось получить рейтинги');
             });
@@ -238,7 +283,9 @@
             Lampa.Lang.add({
                 lpro_rating_settings: { ru: 'Lampa PRO — рейтинги', en: 'Lampa PRO — Ratings' },
                 lpro_rating_key: { ru: 'Ключ Kinopoisk API', en: 'Kinopoisk API key' },
-                lpro_rating_key_desc: { ru: 'Получите личный ключ на kinopoiskapiunofficial.tech. Ключ хранится в настройках этой установки Lampa.', en: 'Get your personal key at kinopoiskapiunofficial.tech. The key is stored in this Lampa installation.' }
+                lpro_rating_key_desc: { ru: 'Получите личный ключ на kinopoiskapiunofficial.tech. Ключ хранится в настройках этой установки Lampa.', en: 'Get your personal key at kinopoiskapiunofficial.tech. The key is stored in this Lampa installation.' },
+                lpro_rating_omdb_key: { ru: 'Ключ OMDb API (Rotten Tomatoes)', en: 'OMDb API key (Rotten Tomatoes)' },
+                lpro_rating_omdb_desc: { ru: 'Бесплатный ключ: omdbapi.com/apikey.aspx. До 1000 запросов в день. Данные OMDb лицензированы CC BY-NC 4.0.', en: 'Free key: omdbapi.com/apikey.aspx. Up to 1,000 requests per day. OMDb data is licensed CC BY-NC 4.0.' }
             });
         }
         Lampa.SettingsApi.addComponent({
@@ -253,6 +300,14 @@
             field: {
                 name: Lampa.Lang && Lampa.Lang.translate ? Lampa.Lang.translate('lpro_rating_key') : 'Ключ Kinopoisk API',
                 description: Lampa.Lang && Lampa.Lang.translate ? Lampa.Lang.translate('lpro_rating_key_desc') : 'Получите личный ключ на kinopoiskapiunofficial.tech'
+            }
+        });
+        Lampa.SettingsApi.addParam({
+            component: SETTINGS_ID,
+            param: { name: OMDB_KEY_NAME, type: 'input', values: '', default: '', placeholder: 'Вставьте личный OMDb API-ключ' },
+            field: {
+                name: Lampa.Lang && Lampa.Lang.translate ? Lampa.Lang.translate('lpro_rating_omdb_key') : 'Ключ OMDb API (Rotten Tomatoes)',
+                description: Lampa.Lang && Lampa.Lang.translate ? Lampa.Lang.translate('lpro_rating_omdb_desc') : 'Бесплатный ключ на omdbapi.com/apikey.aspx'
             }
         });
     }
