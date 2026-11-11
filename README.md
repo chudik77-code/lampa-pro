@@ -5,9 +5,10 @@ Custom plugins for Lampa TV.
 ## Plugins
 
 ### Smart Rating
-Displays Kinopoisk and IMDb ratings on movie detail pages.
+Displays Kinopoisk, IMDb and Rotten Tomatoes ratings on movie detail pages. Rotten Tomatoes requires a separate OMDb API key.
 - File: [smart-rating.js](https://raw.githubusercontent.com/chudik77-code/lampa-pro/main/smart-rating.js)
-- Requires a personal Kinopoisk API key, stored in Lampa settings.
+- Requires a personal Kinopoisk API key and a separate OMDb API key for Rotten Tomatoes; both are stored in Lampa settings.
+- OMDb free keys allow up to 1,000 requests per day for personal, non-commercial use; observe OMDb's CC BY-NC 4.0 license.
 
 ### Watch Statistics
 Tracks viewing time, sessions, completed titles, movies and series, genres, monthly totals and recent viewing.
