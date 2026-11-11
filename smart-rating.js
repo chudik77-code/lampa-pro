@@ -227,7 +227,7 @@
     function loadRatings(card, apiKey, callback) {
         var cacheKey = card.imdb_id || card.id || normalizeTitle(card.title || card.original_title);
         var cached = cacheGet(String(cacheKey));
-        if (cached) return callback(null, cached);
+        if (cached && Object.prototype.hasOwnProperty.call(cached, 'ratingRottenTomatoes')) return callback(null, cached);
 
         findFilm(card, apiKey, function (item) {
             var id = getFilmId(item);
